@@ -11,6 +11,9 @@ class StorageService {
 
   /// Salva uma imagem temporária (da câmera/galeria) no diretório permanente do app
   Future<String> saveImagePermanently(File sourceFile) async {
+    if (kIsWeb) {
+      return sourceFile.path;
+    }
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final wardrobeDir = Directory(p.join(appDir.path, 'wardrobe_images'));

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../models/clothing_item.dart';
@@ -43,6 +44,14 @@ class ClothingImageView extends StatelessWidget {
     }
 
     // Caso seja foto real salva no dispositivo
+    if (kIsWeb) {
+      return Image.network(
+        item.imagePath,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => _buildSampleIllustration(),
+      );
+    }
+
     final file = File(item.imagePath);
     return Image.file(
       file,

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import '../models/category.dart';
 import '../models/clothing_item.dart';
 import '../models/outfit.dart';
@@ -22,14 +23,25 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      return await databaseFactory.openDatabase(
+        'wardrobe_ai.db',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _onCreate,
+        ),
+      );
+    }
+
     // Suporte para execução no Desktop (Windows/Linux/macOS) ou Testes
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
 
     String dbPath;
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    if (Platform.isWindows || Platform.isLinux) {
       final appDir = await getApplicationDocumentsDirectory();
       dbPath = p.join(appDir.path, 'wardrobe_ai.db');
     } else {
