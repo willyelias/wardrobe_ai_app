@@ -32,7 +32,7 @@ dependencies:
   table_calendar: ^3.1.2
 
   # Monetization (AdMob)
-  google_mobile_ads: ^5.1.0
+  google_mobile_ads: ^9.1.0
 
   # Networking & Environment
   http: ^1.2.2
