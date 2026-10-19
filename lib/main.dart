@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'services/ad_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
 import 'views/main_scaffold.dart';
+import 'views/onboarding/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,18 +33,21 @@ void main() async {
     debugPrint('Aviso: Arquivo .env não encontrado ou vazio. Usando configurações padrão.');
   }
 
-  // Inicializa o SDK do Google Mobile Ads (AdMob)
-  await AdManager.instance.initialize();
+  // Verifica se o usuário já completou o Onboarding de primeira abertura
+  final prefs = await SharedPreferences.getInstance();
+  final bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
   runApp(
-    const ProviderScope(
-      child: WardrobeAiApp(),
+    ProviderScope(
+      child: WardrobeAiApp(showOnboarding: !onboardingCompleted),
     ),
   );
 }
 
 class WardrobeAiApp extends StatelessWidget {
-  const WardrobeAiApp({super.key});
+  final bool showOnboarding;
+
+  const WardrobeAiApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +55,7 @@ class WardrobeAiApp extends StatelessWidget {
       title: 'Wardrobe AI - Virtual Stylist',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainScaffold(),
+      home: showOnboarding ? const OnboardingScreen() : const MainScaffold(),
     );
   }
 }

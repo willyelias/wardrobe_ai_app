@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'avatar/virtual_fitting_screen.dart';
 import 'calendar/calendar_screen.dart';
 import 'closet/closet_screen.dart';
 import 'stylist/stylist_screen.dart';
 
-/// Estrutura principal com Bottom Navigation Bar nas 3 abas essenciais
+/// Estrutura principal com Bottom Navigation Bar nas 4 abas modernas:
+/// Closet, Provador Virtual (Avatar), IA Stylist e Calendário
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
 
@@ -18,6 +20,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   final List<Widget> _screens = const [
     ClosetScreen(),
+    VirtualFittingScreen(),
     StylistScreen(),
     CalendarScreen(),
   ];
@@ -44,6 +47,11 @@ class _MainScaffoldState extends State<MainScaffold> {
               icon: Icon(CupertinoIcons.square_grid_2x2),
               activeIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
               label: 'Closet',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.person_crop_circle),
+              activeIcon: Icon(CupertinoIcons.person_crop_circle_fill),
+              label: 'Provador',
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.sparkles),

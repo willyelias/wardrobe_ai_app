@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/category.dart';
 import '../../models/clothing_item.dart';
 import '../../providers/wardrobe_provider.dart';
+import '../../providers/avatar_provider.dart';
+import '../shop/shop_similar_dialog.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/clothing_image_view.dart';
 import '../../widgets/custom_chip.dart';
@@ -120,8 +122,64 @@ class ItemDetailDialog extends ConsumerWidget {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
           ],
+
+          // Ações Rápidas: Buscar em Lojas & Provar no Avatar
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlack,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                  label: const Text(
+                    'Buscar em Lojas',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ShopSimilarDialog.show(context, item);
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primaryBlack,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: const BorderSide(color: AppColors.cardBorder),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.accessibility_new_rounded, size: 18),
+                  label: const Text(
+                    'Provar no Avatar',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  onPressed: () {
+                    ref.read(avatarProvider.notifier).equipItem(item);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('"${item.name}" adicionada ao seu Provador Virtual!'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
           // Botão Excluir Peça
           OutlinedButton.icon(

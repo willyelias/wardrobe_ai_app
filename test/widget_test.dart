@@ -9,17 +9,18 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   });
 
-  testWidgets('App renders main scaffold and 3 navigation tabs', (WidgetTester tester) async {
+  testWidgets('App renders main scaffold and 4 navigation tabs', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: WardrobeAiApp(),
+        child: WardrobeAiApp(showOnboarding: false),
       ),
     );
 
     await tester.pump();
 
-    // Verifica se as três abas estão visíveis
+    // Verifica se as quatro abas modernas estão visíveis
     expect(find.text('Closet'), findsWidgets);
+    expect(find.text('Provador'), findsOneWidget);
     expect(find.text('IA Stylist'), findsOneWidget);
     expect(find.text('Calendário'), findsOneWidget);
   });

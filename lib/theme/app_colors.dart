@@ -27,6 +27,13 @@ class AppColors {
   static const Color primaryLight = Color(0xFF2C2C2E);
   static const Color accent = Color(0xFF007AFF); // Apple Blue sutil para interações
   static const Color goldAccent = Color(0xFFD4AF37); // Para IA / Premium
+  static const Color accentBronze = Color(0xFFB8860B);
+
+  // Aliases de design
+  static const Color pureWhite = Color(0xFFFFFFFF);
+  static const Color primaryBlack = Color(0xFF1C1C1E);
+  static const Color cardBackground = Color(0xFFF2F2F7);
+  static const Color cardBorder = Color(0xFFE5E5EA);
 
   // Status & Tags
   static const Color success = Color(0xFF34C759);

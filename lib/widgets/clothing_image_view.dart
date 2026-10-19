@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../models/clothing_item.dart';
 import '../theme/app_colors.dart';
@@ -9,7 +8,9 @@ import '../theme/app_colors.dart';
 /// Exibe a imagem da roupa com suporte para arquivos locais transparentes
 /// e ilustrações estilizadas para peças de demonstração.
 class ClothingImageView extends StatelessWidget {
-  final ClothingItem item;
+  final ClothingItem? item;
+  final String? imagePath;
+  final ClothingCategory? category;
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -17,12 +18,17 @@ class ClothingImageView extends StatelessWidget {
 
   const ClothingImageView({
     super.key,
-    required this.item,
+    this.item,
+    this.imagePath,
+    this.category,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
     this.borderRadius = 14,
   });
+
+  String get _effectiveImagePath => item?.imagePath ?? imagePath ?? '';
+  ClothingCategory get _effectiveCategory => item?.category ?? category ?? ClothingCategory.top;
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +44,31 @@ class ClothingImageView extends StatelessWidget {
   }
 
   Widget _buildImageContent() {
-    // Caso seja uma peça de demonstração (seed inicial)
-    if (item.imagePath.startsWith('sample_')) {
+    final path = _effectiveImagePath;
+
+    if (path.isEmpty) {
       return _buildSampleIllustration();
     }
 
-    // Caso seja foto real salva no dispositivo
-    if (kIsWeb) {
+    // Caso seja uma peça de demonstração (seed inicial)
+    if (path.startsWith('sample_')) {
+      return _buildSampleIllustration();
+    }
+
+    // Caso seja foto real salva no dispositivo ou rede
+    if (kIsWeb || path.startsWith('http')) {
       return Image.network(
-        item.imagePath,
+        path,
         fit: fit,
         errorBuilder: (context, error, stackTrace) => _buildSampleIllustration(),
       );
     }
 
-    final file = File(item.imagePath);
+    final file = File(path);
+    if (!file.existsSync()) {
+      return _buildSampleIllustration();
+    }
+
     return Image.file(
       file,
       fit: fit,
@@ -64,7 +80,7 @@ class ClothingImageView extends StatelessWidget {
     IconData icon;
     Color iconColor;
 
-    switch (item.category) {
+    switch (_effectiveCategory) {
       case ClothingCategory.top:
         icon = CupertinoIcons.tag;
         iconColor = const Color(0xFF4A6572);
@@ -74,59 +90,28 @@ class ClothingImageView extends StatelessWidget {
         iconColor = const Color(0xFF34495E);
         break;
       case ClothingCategory.shoes:
-        icon = CupertinoIcons.sparkles;
+        icon = CupertinoIcons.bolt_horizontal_circle;
         iconColor = const Color(0xFF2C3E50);
         break;
       case ClothingCategory.outerwear:
-        icon = CupertinoIcons.layers_alt;
-        iconColor = const Color(0xFF1B2631);
+        icon = CupertinoIcons.shield;
+        iconColor = const Color(0xFF16A085);
         break;
       case ClothingCategory.onePiece:
         icon = CupertinoIcons.person;
-        iconColor = const Color(0xFF5D6D7E);
+        iconColor = const Color(0xFFE67E22);
         break;
       case ClothingCategory.accessory:
-        icon = CupertinoIcons.eyeglasses;
-        iconColor = const Color(0xFF7F8C8D);
+        icon = CupertinoIcons.circle_grid_hex;
+        iconColor = const Color(0xFF8E44AD);
         break;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.grey.shade100,
-            Colors.grey.shade200,
-          ],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: (height != null && height! < 100) ? 28 : 42,
-              color: iconColor,
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                item.color,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textTertiary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+    return Center(
+      child: Icon(
+        icon,
+        size: (width != null && width! < 60) ? 22 : 36,
+        color: iconColor.withValues(alpha: 0.65),
       ),
     );
   }

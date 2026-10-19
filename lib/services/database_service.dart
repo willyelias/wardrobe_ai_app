@@ -8,6 +8,8 @@ import '../models/category.dart';
 import '../models/clothing_item.dart';
 import '../models/outfit.dart';
 import '../models/calendar_log.dart';
+import '../models/user_avatar.dart';
+import '../models/user_profile.dart';
 
 /// Serviço central de banco de dados SQLite para o Guarda-Roupa Virtual
 class DatabaseService {
@@ -25,13 +27,16 @@ class DatabaseService {
   Future<Database> _initDatabase() async {
     if (kIsWeb) {
       databaseFactory = databaseFactoryFfiWeb;
-      return await databaseFactory.openDatabase(
+      final db = await databaseFactory.openDatabase(
         'wardrobe_ai.db',
         options: OpenDatabaseOptions(
-          version: 1,
+          version: 2,
           onCreate: _onCreate,
+          onUpgrade: _onUpgrade,
         ),
       );
+      await _ensureTablesExist(db);
+      return db;
     }
 
     // Suporte para execução no Desktop (Windows/Linux/macOS) ou Testes
@@ -49,11 +54,14 @@ class DatabaseService {
       dbPath = p.join(databasesPath, 'wardrobe_ai.db');
     }
 
-    return await openDatabase(
+    final db = await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+    await _ensureTablesExist(db);
+    return db;
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -96,8 +104,42 @@ class DatabaseService {
       )
     ''');
 
+    await _ensureTablesExist(db);
+
     // Seed com peças iniciais de demonstração (caso vazio)
     await _seedInitialWardrobe(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    await _ensureTablesExist(db);
+  }
+
+  Future<void> _ensureTablesExist(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS user_avatars (
+        id TEXT PRIMARY KEY,
+        imagePath TEXT NOT NULL,
+        heightCm REAL,
+        bodyType TEXT,
+        skinTone TEXT,
+        notes TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        id TEXT PRIMARY KEY,
+        displayName TEXT NOT NULL,
+        email TEXT NOT NULL,
+        photoUrl TEXT,
+        authMethod TEXT NOT NULL,
+        isLoggedIn INTEGER DEFAULT 0,
+        lastSyncAt TEXT,
+        createdAt TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> _seedInitialWardrobe(Database db) async {
@@ -395,5 +437,108 @@ class DatabaseService {
   Future<void> deleteCalendarLog(String id) async {
     final db = await database;
     await db.delete('calendar_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ==================== AVATAR DO USUÁRIO ====================
+
+  Future<UserAvatar?> getUserAvatar() async {
+    final db = await database;
+    final maps = await db.query('user_avatars', limit: 1);
+    if (maps.isEmpty) return null;
+    return UserAvatar.fromMap(maps.first);
+  }
+
+  Future<void> saveUserAvatar(UserAvatar avatar) async {
+    final db = await database;
+    await db.insert(
+      'user_avatars',
+      avatar.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteUserAvatar() async {
+    final db = await database;
+    await db.delete('user_avatars');
+  }
+
+  // ==================== PERFIL DO USUÁRIO ====================
+
+  Future<UserProfile?> getUserProfile() async {
+    final db = await database;
+    final maps = await db.query('user_profiles', limit: 1);
+    if (maps.isEmpty) return null;
+    return UserProfile.fromMap(maps.first);
+  }
+
+  Future<void> saveUserProfile(UserProfile profile) async {
+    final db = await database;
+    await db.insert(
+      'user_profiles',
+      profile.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> clearUserProfile() async {
+    final db = await database;
+    await db.delete('user_profiles');
+  }
+
+  // ==================== BACKUP & CLOUD EXPORT/IMPORT ====================
+
+  Future<Map<String, dynamic>> exportAllUserDataJson() async {
+    final db = await database;
+    final clothes = await db.query('clothes');
+    final outfits = await db.query('outfits');
+    final calendarLogs = await db.query('calendar_logs');
+    final avatars = await db.query('user_avatars');
+    final profiles = await db.query('user_profiles');
+
+    return {
+      'version': 2,
+      'exportedAt': DateTime.now().toIso8601String(),
+      'clothes': clothes,
+      'outfits': outfits,
+      'calendar_logs': calendarLogs,
+      'user_avatars': avatars,
+      'user_profiles': profiles,
+    };
+  }
+
+  Future<void> importUserDataJson(Map<String, dynamic> data) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      if (data['clothes'] is List) {
+        for (var item in data['clothes'] as List) {
+          await txn.insert('clothes', Map<String, dynamic>.from(item as Map),
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+      if (data['outfits'] is List) {
+        for (var item in data['outfits'] as List) {
+          await txn.insert('outfits', Map<String, dynamic>.from(item as Map),
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+      if (data['calendar_logs'] is List) {
+        for (var item in data['calendar_logs'] as List) {
+          await txn.insert('calendar_logs', Map<String, dynamic>.from(item as Map),
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+      if (data['user_avatars'] is List) {
+        for (var item in data['user_avatars'] as List) {
+          await txn.insert('user_avatars', Map<String, dynamic>.from(item as Map),
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+      if (data['user_profiles'] is List) {
+        for (var item in data['user_profiles'] as List) {
+          await txn.insert('user_profiles', Map<String, dynamic>.from(item as Map),
+              conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+      }
+    });
   }
 }

@@ -13,6 +13,7 @@ import '../../widgets/custom_chip.dart';
 import '../../widgets/empty_state.dart';
 import 'add_item_sheet.dart';
 import 'item_detail_dialog.dart';
+import '../profile/profile_sheet.dart';
 
 /// Aba 1: Closet Virtual (Inventário e Câmera com Remoção de Fundo)
 class ClosetScreen extends ConsumerWidget {
@@ -122,6 +123,11 @@ class ClosetScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_outlined),
+            tooltip: 'Conta & Nuvem',
+            onPressed: () => ProfileSheet.show(context),
+          ),
           IconButton(
             icon: const Icon(CupertinoIcons.slider_horizontal_3),
             tooltip: 'Recarregar',

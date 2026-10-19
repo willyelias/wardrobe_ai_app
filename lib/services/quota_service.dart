@@ -37,19 +37,17 @@ class QuotaService {
     return prefs.getInt(_getTodayBonusKey()) ?? 0;
   }
 
+  /// Modo Ilimitado Ativo (Sem limitação de looks)
+  bool get isUnlimited => true;
+
   /// Retorna o número de gerações restantes disponíveis para hoje
   Future<int> getRemainingGenerationsToday() async {
-    final used = await getUsedGenerationsToday();
-    final bonus = await getBonusGenerationsToday();
-    final totalAllowance = maxDailyFreeGenerations + bonus;
-    final remaining = totalAllowance - used;
-    return remaining < 0 ? 0 : remaining;
+    return 999;
   }
 
-  /// Verifica se o usuário tem cota disponível ou se precisa assistir a um anúncio
+  /// Verifica se o usuário tem cota disponível
   Future<bool> canGenerate() async {
-    final remaining = await getRemainingGenerationsToday();
-    return remaining > 0;
+    return true; // Sempre permitido no modo ilimitado
   }
 
   /// Consome 1 geração do saldo do usuário

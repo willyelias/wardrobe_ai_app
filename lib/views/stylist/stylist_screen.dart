@@ -1,16 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/quota_provider.dart';
 import '../../providers/stylist_provider.dart';
 import '../../providers/wardrobe_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/custom_chip.dart';
 import 'look_detail_card.dart';
-import 'native_ad_fashion_card.dart';
-import 'rewarded_ad_dialog.dart';
 
-/// Aba 2: IA Stylist (Gerador de Looks Inteligentes com Monetização AdMob)
+/// Aba IA Stylist: Gerador de Looks Inteligentes Ilimitados com Curadoria Pessoal
 class StylistScreen extends ConsumerWidget {
   const StylistScreen({super.key});
 
@@ -43,60 +40,43 @@ class StylistScreen extends ConsumerWidget {
       return;
     }
 
-    final quota = ref.read(quotaProvider);
-    if (!quota.canGenerate) {
-      // Exibe modal para assistir a um vídeo de recompensa (Rewarded Ad)
-      showDialog(
-        context: context,
-        builder: (ctx) => RewardedAdDialog(
-          onRewardSuccess: () {
-            ref.read(stylistProvider.notifier).generateOutfit(wardrobe);
-          },
-        ),
-      );
-      return;
-    }
-
-    // Executa a geração de IA
+    // Executa a geração de IA sem restrição ou anúncios
     await ref.read(stylistProvider.notifier).generateOutfit(wardrobe);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stylistState = ref.watch(stylistProvider);
-    final quotaState = ref.watch(quotaProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('IA Stylist'),
         actions: [
-          // Contador de Cota Diária Elegante
+          // Badge de Looks Ilimitados
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: quotaState.canGenerate ? AppColors.surfaceSubtle : const Color(0xFFFFE5E5),
+                color: AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: quotaState.canGenerate ? AppColors.border : const Color(0xFFFFB3B3),
-                ),
+                border: Border.all(color: AppColors.border),
               ),
-              child: Row(
+              child: const Row(
                 children: [
                   Icon(
                     CupertinoIcons.sparkles,
                     size: 14,
-                    color: quotaState.canGenerate ? AppColors.goldAccent : AppColors.error,
+                    color: AppColors.goldAccent,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(
-                    '${quotaState.remaining} restantes',
+                    'Looks Ilimitados',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: quotaState.canGenerate ? AppColors.textPrimary : AppColors.error,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -209,10 +189,54 @@ class StylistScreen extends ConsumerWidget {
             // Look Sugerido Atual (Moodboard)
             if (stylistState.currentOutfit != null) ...[
               LookDetailCard(outfit: stylistState.currentOutfit!),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
-              // Espaço de Anúncio Nativo Minimalista (Monetização)
-              const NativeAdFashionCard(),
+              // Card Informativo de Tendências da Moda (Substitui anúncios)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.pureWhite,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.lightbulb_outline_rounded, color: Colors.amber.shade800, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dica de Styling',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryBlack,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Toque em qualquer peça do look acima para buscar modelos semelhantes ou preços nas maiores lojas online.',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textSecondary,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ],
         ),

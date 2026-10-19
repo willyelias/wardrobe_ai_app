@@ -16,7 +16,8 @@ class QuotaState {
     this.isLoading = false,
   });
 
-  bool get canGenerate => remaining > 0;
+  bool get canGenerate => true;
+  bool get isUnlimited => true;
 
   QuotaState copyWith({
     int? remaining,
