@@ -37,6 +37,7 @@ class StorageService {
 
   /// Remove arquivo de imagem do disco quando uma peça é deletada
   Future<void> deleteImage(String path) async {
+    if (kIsWeb) return;
     try {
       final file = File(path);
       if (await file.exists()) {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -524,14 +525,24 @@ class _VirtualFittingScreenState extends ConsumerState<VirtualFittingScreen> {
   }
 
   Widget _buildAvatarImage(String path) {
-    if (path.startsWith('http')) {
-      return Image.network(path, fit: BoxFit.cover);
+    if (path.startsWith('http') || kIsWeb) {
+      if (path.isNotEmpty && (path.startsWith('http') || path.startsWith('blob:'))) {
+        return Image.network(
+          path,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
+        );
+      }
+      return _buildAvatarPlaceholder();
     }
     final file = File(path);
     if (file.existsSync()) {
       return Image.file(file, fit: BoxFit.cover);
     }
-    // High-fashion default avatar silhouette if file not yet uploaded
+    return _buildAvatarPlaceholder();
+  }
+
+  Widget _buildAvatarPlaceholder() {
     return Container(
       color: Colors.grey.shade100,
       child: Center(
