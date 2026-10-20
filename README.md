@@ -1,12 +1,14 @@
 # 👔 Wardrobe AI - Virtual Closet & Personal Stylist
 
-[![Download APK](https://img.shields.io/badge/Download_APK-v1.1.0-brightgreen?style=for-the-badge&logo=android)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+[![Download APK](https://img.shields.io/badge/Download_APK-Android_v1.1.0-brightgreen?style=for-the-badge&logo=android)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+[![Acessar Web / iPhone](https://img.shields.io/badge/Acessar_Web-iPhone_%26_Safari-black?style=for-the-badge&logo=apple)](https://willyelias.github.io/wardrobe_ai_app/)
 [![Release](https://img.shields.io/github/v/release/willyelias/wardrobe_ai_app?style=for-the-badge)](https://github.com/willyelias/wardrobe_ai_app/releases/tag/v1.1.0)
-[![License](https://img.shields.io/badge/License-Proprietary-black?style=for-the-badge)](#)
 
 Aplicativo mobile de ponta a ponta desenvolvido em **Flutter**, focado em gestão inteligente de guarda-roupa virtual, provador virtual no próprio corpo do usuário com avatar personalizado, curadoria de looks ilimitados com Inteligência Artificial, pesquisa de peças similares em lojas online (Shop the Look) e planejamento de estilo através de um calendário integrado.
 
-### 📲 [Clique aqui para Baixar o APK Oficial (v1.1.0)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+### 📲 Acessos Oficiais:
+* 🤖 **Para Android:** [Baixar APK Oficial v1.1.0](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+* 🍏 **Para iPhone (iOS) / Navegadores:** [Acessar Wardrobe AI Web](https://willyelias.github.io/wardrobe_ai_app/) *(No iPhone: abra no Safari, toque no ícone de Compartilhar e selecione **"Adicionar à Tela de Início"** para instalar como app!)*
 
 ---
 
