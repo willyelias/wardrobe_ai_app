@@ -1,8 +1,12 @@
 # 👔 Wardrobe AI - Virtual Closet & Personal Stylist
 
-Aplicativo mobile de ponta a ponta desenvolvido em **Flutter**, focado em gestão inteligente de guarda-roupa virtual, curadoria de looks com Inteligência Artificial e planejamento de estilo através de um calendário integrado.
+[![Download APK](https://img.shields.io/badge/Download_APK-v1.1.0-brightgreen?style=for-the-badge&logo=android)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+[![Release](https://img.shields.io/github/v/release/willyelias/wardrobe_ai_app?style=for-the-badge)](https://github.com/willyelias/wardrobe_ai_app/releases/tag/v1.1.0)
+[![License](https://img.shields.io/badge/License-Proprietary-black?style=for-the-badge)](#)
 
-Construído com base nos princípios do **Apple Human Interface Guidelines (Minimalismo / Cupertino + Material 3)**: superfícies off-white limpas, tipografia refinada, sombras suaves e ausência total de poluição visual.
+Aplicativo mobile de ponta a ponta desenvolvido em **Flutter**, focado em gestão inteligente de guarda-roupa virtual, provador virtual no próprio corpo do usuário com avatar personalizado, curadoria de looks ilimitados com Inteligência Artificial, pesquisa de peças similares em lojas online (Shop the Look) e planejamento de estilo através de um calendário integrado.
+
+### 📲 [Clique aqui para Baixar o APK Oficial (v1.1.0)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
 
 ---
 
