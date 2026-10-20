@@ -51,6 +51,11 @@ app.*.map.json
 
 # Local configuration
 /android/local.properties
+/android/key.properties
+*.jks
+*.keystore
+*.aab
+releases/
 /ios/Flutter/Generated.xcconfig
 /ios/Flutter/flutter_export_environment.sh
 /ios/Flutter/Flutter.podspec
