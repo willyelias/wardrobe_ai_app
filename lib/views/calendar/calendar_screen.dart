@@ -11,6 +11,7 @@ import '../../widgets/apple_card.dart';
 import '../../widgets/clothing_image_view.dart';
 import '../../widgets/empty_state.dart';
 import 'schedule_look_dialog.dart';
+import 'smart_packing_dialog.dart';
 
 /// Aba 3: Calendário de Histórico e Planejamento de Looks
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -163,6 +164,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         title: const Text('Calendário'),
         actions: [
           IconButton(
+            icon: const Icon(CupertinoIcons.bag),
+            tooltip: 'Mala de Viagem Inteligente',
+            onPressed: () => SmartPackingDialog.show(context),
+          ),
+          IconButton(
             icon: const Icon(CupertinoIcons.today),
             tooltip: 'Ir para Hoje',
             onPressed: () {
@@ -177,6 +183,52 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Banner de Acesso Rápido à Mala Inteligente
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: AppleCard(
+                padding: const EdgeInsets.all(14),
+                onTap: () => SmartPackingDialog.show(context),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(CupertinoIcons.bag_fill, color: AppColors.primaryBlack, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mala de Viagem Inteligente',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Método cápsula 5-4-3-2-1 com checklist interativo.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(CupertinoIcons.chevron_right, size: 16, color: AppColors.textTertiary),
+                  ],
+                ),
+              ),
+            ),
+
             // Widget de Calendário Estilo Apple
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

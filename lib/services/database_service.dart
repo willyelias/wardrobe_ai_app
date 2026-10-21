@@ -136,10 +136,25 @@ class DatabaseService {
         photoUrl TEXT,
         authMethod TEXT NOT NULL,
         isLoggedIn INTEGER DEFAULT 0,
+        colorPalette TEXT,
         lastSyncAt TEXT,
         createdAt TEXT NOT NULL
       )
     ''');
+
+    // Migrações dinâmicas para novos recursos (Custo por uso, Peças esquecidas e Paleta)
+    try {
+      await db.execute('ALTER TABLE clothes ADD COLUMN purchasePrice REAL;');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE clothes ADD COLUMN wearCount INTEGER DEFAULT 0;');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE clothes ADD COLUMN lastWornDate TEXT;');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN colorPalette TEXT;');
+    } catch (_) {}
   }
 
   Future<void> _seedInitialWardrobe(Database db) async {
@@ -432,6 +447,19 @@ class DatabaseService {
   Future<void> insertCalendarLog(CalendarLog log) async {
     final db = await database;
     await db.insert('calendar_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Atualiza automaticamente o contador de uso (wearCount) e data do último uso das peças
+    if (log.outfit != null && log.outfit!.itemIds.isNotEmpty) {
+      final dateStr = log.date.toIso8601String();
+      for (final itemId in log.outfit!.itemIds) {
+        await db.rawUpdate('''
+          UPDATE clothes 
+          SET wearCount = COALESCE(wearCount, 0) + 1, 
+              lastWornDate = ? 
+          WHERE id = ?
+        ''', [dateStr, itemId]);
+      }
+    }
   }
 
   Future<void> deleteCalendarLog(String id) async {

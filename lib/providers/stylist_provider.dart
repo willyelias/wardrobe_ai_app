@@ -3,6 +3,7 @@ import '../models/clothing_item.dart';
 import '../models/outfit.dart';
 import '../services/ai_stylist_service.dart';
 import '../services/database_service.dart';
+import '../services/weather_service.dart';
 import 'quota_provider.dart';
 
 class StylistState {
@@ -72,7 +73,11 @@ class StylistNotifier extends StateNotifier<StylistState> {
   }
 
   /// Gera um novo look através da IA consumindo a cota diária
-  Future<bool> generateOutfit(List<ClothingItem> wardrobe) async {
+  Future<bool> generateOutfit(
+    List<ClothingItem> wardrobe, {
+    WeatherInfo? weather,
+    String? colorPalette,
+  }) async {
     final quotaState = _ref.read(quotaProvider);
     if (!quotaState.canGenerate) {
       state = state.copyWith(
@@ -88,6 +93,8 @@ class StylistNotifier extends StateNotifier<StylistState> {
         occasion: state.selectedOccasion,
         availableClothes: wardrobe,
         vibePreference: state.selectedVibe,
+        weather: weather,
+        colorPalette: colorPalette,
       );
 
       // Consome cota de geração

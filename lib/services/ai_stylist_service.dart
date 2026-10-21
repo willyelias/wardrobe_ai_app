@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../models/category.dart';
 import '../models/clothing_item.dart';
 import '../models/outfit.dart';
+import 'weather_service.dart';
 
 /// Serviço de Stylist com Inteligência Artificial
 /// Capaz de gerar combinações sofisticadas com base nas peças cadastradas no SQLite,
@@ -15,11 +16,13 @@ class AiStylistService {
   AiStylistService._();
   static final AiStylistService instance = AiStylistService._();
 
-  /// Gera uma recomendação de look com base na ocasião e no acervo do usuário
+  /// Gera uma recomendação de look com base na ocasião, no acervo do usuário, clima e cartela
   Future<Outfit> generateLook({
     required String occasion,
     required List<ClothingItem> availableClothes,
     String? vibePreference,
+    WeatherInfo? weather,
+    String? colorPalette,
   }) async {
     if (availableClothes.isEmpty) {
       throw Exception('Seu closet está vazio. Cadastre algumas peças para a IA analisar!');
@@ -42,12 +45,13 @@ class AiStylistService {
     }
 
     // Modo Stylist Simulado Inteligente (Algoritmo de Harmonia & Proporção de Moda)
-    // Simula um delay de pensamento natural da IA (1.2s) para uma experiência de luxo
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 1000));
     return _generateCuratedLocalOutfit(
       occasion: occasion,
       clothes: availableClothes,
       vibe: vibePreference,
+      weather: weather,
+      colorPalette: colorPalette,
     );
   }
 
@@ -129,6 +133,8 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
     required String occasion,
     required List<ClothingItem> clothes,
     String? vibe,
+    WeatherInfo? weather,
+    String? colorPalette,
   }) {
     final rand = Random();
 
@@ -150,8 +156,11 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
 
     final selectedItems = <ClothingItem>[];
 
+    // Clima frio inibe vestidos de verão
+    final isColdDay = weather?.isCold == true || occasion == 'Frio';
+
     // Decide entre Vestido/Macacão ou Top + Bottom
-    final useOnePiece = onePieces.isNotEmpty && rand.nextBool() && occasion != 'Frio';
+    final useOnePiece = onePieces.isNotEmpty && rand.nextBool() && !isColdDay;
 
     if (useOnePiece) {
       final matchedPieces = onePieces.where(isMatch).toList();
@@ -173,9 +182,9 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
       selectedItems.add(matchedShoes.isNotEmpty ? matchedShoes[rand.nextInt(matchedShoes.length)] : shoes[rand.nextInt(shoes.length)]);
     }
 
-    // Casaco/Blazer (Obrigatório em Frio ou preferencial em Trabalho/Balada)
+    // Casaco/Blazer (Obrigatório em clima frio ou preferencial em Trabalho/Balada)
     if (outers.isNotEmpty) {
-      final shouldAddOuter = occasion == 'Frio' || (occasion == 'Trabalho' && rand.nextBool()) || rand.nextDouble() < 0.35;
+      final shouldAddOuter = isColdDay || (occasion == 'Trabalho' && rand.nextBool()) || rand.nextDouble() < 0.35;
       if (shouldAddOuter) {
         final matchedOuters = outers.where(isMatch).toList();
         selectedItems.add(matchedOuters.isNotEmpty ? matchedOuters[rand.nextInt(matchedOuters.length)] : outers[rand.nextInt(outers.length)]);
@@ -188,7 +197,7 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
     }
 
     final lookName = _generateLookTitle(occasion, selectedItems);
-    final stylistNote = _generateStylistAdvice(occasion, selectedItems);
+    final stylistNote = _generateStylistAdvice(occasion, selectedItems, weather: weather, colorPalette: colorPalette);
 
     return Outfit(
       id: const Uuid().v4(),
@@ -218,13 +227,22 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
     }
   }
 
-  String _generateStylistAdvice(String occasion, List<ClothingItem> items) {
+  String _generateStylistAdvice(
+    String occasion,
+    List<ClothingItem> items, {
+    WeatherInfo? weather,
+    String? colorPalette,
+  }) {
     final top = items.where((i) => i.category == ClothingCategory.top || i.category == ClothingCategory.onePiece).firstOrNull;
     final bottom = items.where((i) => i.category == ClothingCategory.bottom).firstOrNull;
     final shoe = items.where((i) => i.category == ClothingCategory.shoes).firstOrNull;
     final outer = items.where((i) => i.category == ClothingCategory.outerwear).firstOrNull;
 
     final parts = <String>[];
+
+    if (weather != null) {
+      parts.add('[Clima ${weather.temperature.toStringAsFixed(0)}°C ${weather.icon}]: ${weather.stylingAdvice}');
+    }
 
     if (top != null && bottom != null) {
       parts.add('A sobreposição de "${top.name}" com "${bottom.name}" estabelece um contraste balanceado e moderno.');
@@ -238,6 +256,10 @@ Retorne ESTRITAMENTE um JSON válido com esta estrutura:
 
     if (shoe != null) {
       parts.add('Finalizado com "${shoe.name}", ancorando o visual com extremo conforto e precisão de estilo.');
+    }
+
+    if (colorPalette != null) {
+      parts.add('Tons alinhados com a sua cartela de coloração pessoal ($colorPalette).');
     }
 
     switch (occasion.toLowerCase()) {

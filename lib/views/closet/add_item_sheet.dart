@@ -25,6 +25,7 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _colorController;
+  late final TextEditingController _priceController;
 
   late File _currentImageFile;
   bool _removeBackground = true;
@@ -48,6 +49,7 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
     super.initState();
     _nameController = TextEditingController();
     _colorController = TextEditingController(text: 'Neutro');
+    _priceController = TextEditingController();
     _currentImageFile = widget.initialImageFile;
 
     // Inicia a remoção de fundo automaticamente ao abrir se a flag estiver ativa
@@ -60,6 +62,7 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
   void dispose() {
     _nameController.dispose();
     _colorController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -90,6 +93,9 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
       // Salva imagem no armazenamento permanente local do app
       final savedPath = await StorageService.instance.saveImagePermanently(_currentImageFile);
 
+      final priceText = _priceController.text.replaceAll(',', '.').trim();
+      final purchasePrice = priceText.isNotEmpty ? double.tryParse(priceText) : null;
+
       final newItem = ClothingItem(
         id: const Uuid().v4(),
         name: _nameController.text.trim(),
@@ -98,6 +104,7 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
         imagePath: savedPath,
         occasions: _selectedOccasions.toList(),
         season: _selectedSeason,
+        purchasePrice: purchasePrice,
         createdAt: DateTime.now(),
       );
 
@@ -332,6 +339,18 @@ class _AddItemSheetState extends ConsumerState<AddItemSheet> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+
+              // Preço Pago (para cálculo de Custo por Uso)
+              TextFormField(
+                controller: _priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Preço Pago (Opcional - Custo por Uso)',
+                  hintText: 'Ex: 149.90',
+                  prefixText: 'R\$ ',
+                ),
               ),
               const SizedBox(height: 16),
 

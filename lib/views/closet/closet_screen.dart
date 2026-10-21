@@ -13,11 +13,19 @@ import '../../widgets/custom_chip.dart';
 import '../../widgets/empty_state.dart';
 import 'add_item_sheet.dart';
 import 'item_detail_dialog.dart';
+import 'purchase_validator_dialog.dart';
 import '../profile/profile_sheet.dart';
 
 /// Aba 1: Closet Virtual (Inventário e Câmera com Remoção de Fundo)
-class ClosetScreen extends ConsumerWidget {
+class ClosetScreen extends ConsumerStatefulWidget {
   const ClosetScreen({super.key});
+
+  @override
+  ConsumerState<ClosetScreen> createState() => _ClosetScreenState();
+}
+
+class _ClosetScreenState extends ConsumerState<ClosetScreen> {
+  bool _showOnlyForgotten = false;
 
   Future<void> _pickImage(BuildContext context, ImageSource source) async {
     try {
@@ -94,9 +102,15 @@ class ClosetScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final wardrobeState = ref.watch(wardrobeProvider);
-    final clothes = wardrobeState.filteredClothes;
+    var clothes = wardrobeState.filteredClothes;
+
+    if (_showOnlyForgotten) {
+      clothes = clothes.where((i) => i.isForgotten).toList();
+    }
+
+    final forgottenCount = wardrobeState.allClothes.where((i) => i.isForgotten).length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -124,6 +138,11 @@ class ClosetScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.verified_outlined),
+            tooltip: 'Devo Comprar? (Validador)',
+            onPressed: () => PurchaseValidatorDialog.show(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.cloud_outlined),
             tooltip: 'Conta & Nuvem',
             onPressed: () => ProfileSheet.show(context),
@@ -146,7 +165,47 @@ class ClosetScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Filtros Horizontais de Categoria
+          // Banner de Alerta de Peças Esquecidas (se houver e não estiver filtrando)
+          if (forgottenCount > 0 && !_showOnlyForgotten)
+            InkWell(
+              onTap: () => setState(() => _showOnlyForgotten = true),
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFFFEDD5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.alarm, size: 20, color: Color(0xFFEA580C)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Você tem $forgottenCount peças esquecidas (+30 dias sem uso)',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF9A3412),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Ver',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEA580C),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, size: 16, color: Color(0xFFEA580C)),
+                  ],
+                ),
+              ),
+            ),
+
+          // Filtros Horizontais de Categoria + Filtro de Esquecidas
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: SingleChildScrollView(
@@ -156,19 +215,34 @@ class ClosetScreen extends ConsumerWidget {
                 children: [
                   CustomChip(
                     label: 'Todas',
-                    isSelected: wardrobeState.selectedCategory == null,
-                    onTap: () => ref.read(wardrobeProvider.notifier).selectCategory(null),
+                    isSelected: wardrobeState.selectedCategory == null && !_showOnlyForgotten,
+                    onTap: () {
+                      setState(() => _showOnlyForgotten = false);
+                      ref.read(wardrobeProvider.notifier).selectCategory(null);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  CustomChip(
+                    label: 'Esquecidas ($forgottenCount)',
+                    icon: Icons.alarm,
+                    isSelected: _showOnlyForgotten,
+                    onTap: () {
+                      setState(() => _showOnlyForgotten = !_showOnlyForgotten);
+                    },
                   ),
                   const SizedBox(width: 8),
                   ...ClothingCategory.values.map((cat) {
-                    final isSel = wardrobeState.selectedCategory == cat;
+                    final isSel = wardrobeState.selectedCategory == cat && !_showOnlyForgotten;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: CustomChip(
                         label: cat.displayName,
                         icon: cat.icon,
                         isSelected: isSel,
-                        onTap: () => ref.read(wardrobeProvider.notifier).selectCategory(cat),
+                        onTap: () {
+                          setState(() => _showOnlyForgotten = false);
+                          ref.read(wardrobeProvider.notifier).selectCategory(cat);
+                        },
                       ),
                     );
                   }),
@@ -183,11 +257,15 @@ class ClosetScreen extends ConsumerWidget {
                 ? const Center(child: CupertinoActivityIndicator(radius: 16))
                 : clothes.isEmpty
                     ? EmptyState(
-                        icon: CupertinoIcons.tag,
-                        title: 'Nenhuma peça encontrada',
-                        description: 'Adicione suas primeiras peças usando a câmera ou escolha outra categoria.',
-                        actionLabel: 'Fotografar Roupa',
-                        onAction: () => _showAddPhotoSheet(context),
+                        icon: _showOnlyForgotten ? Icons.alarm_off : CupertinoIcons.tag,
+                        title: _showOnlyForgotten ? 'Nenhuma peça esquecida!' : 'Nenhuma peça encontrada',
+                        description: _showOnlyForgotten
+                            ? 'Parabéns! Você está aproveitando bem todas as roupas do seu armário.'
+                            : 'Adicione suas primeiras peças usando a câmera ou escolha outra categoria.',
+                        actionLabel: _showOnlyForgotten ? 'Ver Todas as Peças' : 'Fotografar Roupa',
+                        onAction: _showOnlyForgotten
+                            ? () => setState(() => _showOnlyForgotten = false)
+                            : () => _showAddPhotoSheet(context),
                       )
                     : GridView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
@@ -195,7 +273,7 @@ class ClosetScreen extends ConsumerWidget {
                           crossAxisCount: 2,
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
-                          childAspectRatio: 0.72,
+                          childAspectRatio: 0.70,
                         ),
                         itemCount: clothes.length,
                         itemBuilder: (context, index) {
@@ -223,7 +301,7 @@ class ClosetScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Imagem da Peça com botão de favorito
+          // Imagem da Peça com badges
           Expanded(
             child: Stack(
               children: [
@@ -271,6 +349,33 @@ class ClosetScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (item.isForgotten)
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFFFCC80)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.alarm, size: 10, color: Color(0xFFE65100)),
+                          SizedBox(width: 3),
+                          Text(
+                            'Esquecida',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE65100),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -303,21 +408,25 @@ class ClosetScreen extends ConsumerWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    if (item.occasions.isNotEmpty) ...[
-                      const Text(' • ', style: TextStyle(color: AppColors.textTertiary)),
-                      Expanded(
-                        child: Text(
-                          item.occasions.first,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textTertiary,
-                          ),
+                    const Spacer(),
+                    if (item.costPerWear != null)
+                      Text(
+                        'R\$ ${item.costPerWear!.toStringAsFixed(0)}/uso',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1B7A3D),
+                        ),
+                      )
+                    else if (item.wearCount > 0)
+                      Text(
+                        '${item.wearCount}x usado',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textTertiary,
                         ),
                       ),
-                    ],
                   ],
                 ),
               ],
