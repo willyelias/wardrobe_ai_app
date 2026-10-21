@@ -1,14 +1,23 @@
 # 👔 Wardrobe AI - Virtual Closet & Personal Stylist
 
-[![Download APK](https://img.shields.io/badge/Download_APK-Android_v1.1.0-brightgreen?style=for-the-badge&logo=android)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+[![Download APK](https://img.shields.io/badge/Download_APK-Android_v1.2.0-brightgreen?style=for-the-badge&logo=android)](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.2.0/wardrobe_ai_v1.2.0.apk)
 [![Acessar Web / iPhone](https://img.shields.io/badge/Acessar_Web-iPhone_%26_Safari-black?style=for-the-badge&logo=apple)](https://willyelias.github.io/wardrobe_ai_app/)
-[![Release](https://img.shields.io/github/v/release/willyelias/wardrobe_ai_app?style=for-the-badge)](https://github.com/willyelias/wardrobe_ai_app/releases/tag/v1.1.0)
+[![Release](https://img.shields.io/github/v/release/willyelias/wardrobe_ai_app?style=for-the-badge)](https://github.com/willyelias/wardrobe_ai_app/releases/tag/v1.2.0)
 
 Aplicativo mobile de ponta a ponta desenvolvido em **Flutter**, focado em gestão inteligente de guarda-roupa virtual, provador virtual no próprio corpo do usuário com avatar personalizado, curadoria de looks ilimitados com Inteligência Artificial, pesquisa de peças similares em lojas online (Shop the Look) e planejamento de estilo através de um calendário integrado.
 
-### 📲 Acessos Oficiais:
-* 🤖 **Para Android:** [Baixar APK Oficial v1.1.0](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.1.0/wardrobe_ai_v1.1.0.apk)
+### 📲 Acessos Oficiais da Versão v1.2.0:
+* 🤖 **Para Android:** [Baixar APK Oficial v1.2.0](https://github.com/willyelias/wardrobe_ai_app/releases/download/v1.2.0/wardrobe_ai_v1.2.0.apk)
 * 🍏 **Para iPhone (iOS) / Navegadores:** [Acessar Wardrobe AI Web](https://willyelias.github.io/wardrobe_ai_app/) *(No iPhone: abra no Safari, toque no ícone de Compartilhar e selecione **"Adicionar à Tela de Início"** para instalar como app!)*
+
+---
+
+### ✨ 5 Novos Diferenciais Exclusivos (v1.2.0)
+1. **🌤️ Weather-Smart Stylist:** Previsão do tempo e temperatura em tempo real com styling inteligente adaptado ao clima.
+2. **🎨 Coloração Pessoal:** Diagnóstico interativo de subtom da pele com cartelas sazonais (*Outono Quente, Inverno Escuro, Primavera Brilhante, Verão Suave*) e avaliação cromática de cada peça.
+3. **🧳 Mala de Viagem Inteligente:** Método cápsula 5-4-3-2-1, geração de looks dia a dia para o destino e checklist interativo de bagagem.
+4. **💰 Custo por Uso (CPW) & Peças Esquecidas:** Rastreamento de custo por uso e detecção automática de roupas paradas há mais de 30 dias no closet.
+5. **🛍️ Validador de Compras ("Devo Comprar?"):** Simulador para testar roupas na loja antes de comprar, detectando compras redundantes e projetando compatibilidade.
 
 ---
 
