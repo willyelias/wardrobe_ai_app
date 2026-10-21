@@ -92,6 +92,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> updateColorPalette(String palette) async {
+    await _authService.updateColorPalette(palette);
+    state = state.copyWith(user: state.user.copyWith(colorPalette: palette));
+  }
+
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
     await _authService.signOut();

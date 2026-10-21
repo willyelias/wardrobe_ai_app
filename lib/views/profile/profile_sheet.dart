@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../models/user_profile.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/color_season_provider.dart';
 import '../../providers/wardrobe_provider.dart';
 import '../../theme/app_colors.dart';
+import '../stylist/color_season_dialog.dart';
 
 class ProfileSheet extends ConsumerStatefulWidget {
   const ProfileSheet({super.key});
@@ -107,6 +109,10 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               children: [
+                // Seção em Destaque: Coloração Pessoal
+                _buildColorSeasonSection(context),
+                const SizedBox(height: 18),
+
                 if (!isLoggedIn) ...[
                   _buildGuestBanner(),
                   const SizedBox(height: 24),
@@ -172,6 +178,110 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 ],
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorSeasonSection(BuildContext context) {
+    final seasonState = ref.watch(colorSeasonProvider);
+    final activeSeason = seasonState.currentSeason;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.pureWhite,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: activeSeason.sampleColors.first.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.palette_outlined, color: AppColors.primaryBlack, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'COLORAÇÃO PESSOAL',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.1,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      activeSeason.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryBlack,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlack,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.camera_alt_outlined, size: 14),
+                label: const Text('Análise Selfie', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
+                onPressed: () {
+                  Navigator.pop(context);
+                  ColorSeasonDialog.show(context);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(
+                activeSeason.subtitle,
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+              const Spacer(),
+              Row(
+                children: activeSeason.sampleColors.take(5).map((c) {
+                  return Container(
+                    width: 14,
+                    height: 14,
+                    margin: const EdgeInsets.only(left: 4),
+                    decoration: BoxDecoration(
+                      color: c,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black12),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ],
       ),

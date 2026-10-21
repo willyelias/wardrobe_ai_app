@@ -170,17 +170,10 @@ class StylistScreen extends ConsumerWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: activeColorSeason.palette.first,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
+                              Icon(Icons.face_retouching_natural_rounded, size: 14, color: activeColorSeason.palette.first),
+                              const SizedBox(width: 5),
                               Text(
-                                activeColorSeason.name,
+                                'Cartela: ${activeColorSeason.name}',
                                 style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,

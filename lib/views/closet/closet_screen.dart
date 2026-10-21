@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/category.dart';
 import '../../models/clothing_item.dart';
+import '../../providers/color_season_provider.dart';
 import '../../providers/wardrobe_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/apple_card.dart';
@@ -14,6 +15,7 @@ import '../../widgets/empty_state.dart';
 import 'add_item_sheet.dart';
 import 'item_detail_dialog.dart';
 import 'purchase_validator_dialog.dart';
+import '../stylist/color_season_dialog.dart';
 import '../profile/profile_sheet.dart';
 
 /// Aba 1: Closet Virtual (Inventário e Câmera com Remoção de Fundo)
@@ -138,6 +140,11 @@ class _ClosetScreenState extends ConsumerState<ClosetScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.palette_outlined),
+            tooltip: 'Coloração Pessoal (Selfie IA)',
+            onPressed: () => ColorSeasonDialog.show(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.verified_outlined),
             tooltip: 'Devo Comprar? (Validador)',
             onPressed: () => PurchaseValidatorDialog.show(context),
@@ -165,6 +172,9 @@ class _ClosetScreenState extends ConsumerState<ClosetScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Banner Nobre de Coloração Pessoal Facial
+          _buildColorSeasonBanner(context),
+
           // Banner de Alerta de Peças Esquecidas (se houver e não estiver filtrando)
           if (forgottenCount > 0 && !_showOnlyForgotten)
             InkWell(
@@ -433,6 +443,85 @@ class _ClosetScreenState extends ConsumerState<ClosetScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildColorSeasonBanner(BuildContext context) {
+    final seasonState = ref.watch(colorSeasonProvider);
+    final activeSeason = seasonState.currentSeason;
+    final primaryColor = activeSeason.sampleColors.first;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+      child: InkWell(
+        onTap: () => ColorSeasonDialog.show(context),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                primaryColor.withValues(alpha: 0.12),
+                Colors.white,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.face_retouching_natural_rounded, color: AppColors.primaryBlack, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Coloração Pessoal: ${activeSeason.name}',
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryBlack,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Row(
+                          children: activeSeason.sampleColors.take(3).map((c) {
+                            return Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(left: 3),
+                              decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Tire uma selfie para analisar seu subtom e tecidos virtuais',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(CupertinoIcons.chevron_right, size: 16, color: AppColors.textTertiary),
+            ],
+          ),
+        ),
       ),
     );
   }

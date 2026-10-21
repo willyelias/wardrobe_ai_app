@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 
 class ColorSeason {
   final String name;
@@ -142,6 +144,167 @@ class ColorSeasonService {
       return 'Verão Suave';
     }
   }
+
+  /// Análise Facial por Foto (Selfie): Extrai tons da pele, contraste e detecta a cartela ideal
+  Future<ColorAnalysisResult> analyzeFacePhoto(File photoFile) async {
+    try {
+      final bytes = await photoFile.readAsBytes();
+      final decoded = img.decodeImage(bytes);
+
+      if (decoded != null) {
+        final w = decoded.width;
+        final h = decoded.height;
+
+        // Amostra região do rosto (bochechas / centro facial: 35% a 65% de largura e 35% a 60% de altura)
+        double totalR = 0, totalG = 0, totalB = 0;
+        int skinPixelCount = 0;
+
+        final startX = (w * 0.35).toInt();
+        final endX = (w * 0.65).toInt();
+        final startY = (h * 0.35).toInt();
+        final endY = (h * 0.60).toInt();
+
+        for (int y = startY; y < endY; y += 4) {
+          for (int x = startX; x < endX; x += 4) {
+            final p = decoded.getPixel(x, y);
+            totalR += p.r;
+            totalG += p.g;
+            totalB += p.b;
+            skinPixelCount++;
+          }
+        }
+
+        final avgR = skinPixelCount > 0 ? (totalR / skinPixelCount) : 180.0;
+        final avgG = skinPixelCount > 0 ? (totalG / skinPixelCount) : 140.0;
+        final avgB = skinPixelCount > 0 ? (totalB / skinPixelCount) : 120.0;
+
+        // Amostra região do cabelo / sobrancelhas (topo central: 30% a 70% de largura, 12% a 25% de altura)
+        double hairR = 0, hairG = 0, hairB = 0;
+        int hairPixelCount = 0;
+        final hairStartY = (h * 0.12).toInt();
+        final hairEndY = (h * 0.25).toInt();
+
+        for (int y = hairStartY; y < hairEndY; y += 4) {
+          for (int x = startX; x < endX; x += 4) {
+            final p = decoded.getPixel(x, y);
+            hairR += p.r;
+            hairG += p.g;
+            hairB += p.b;
+            hairPixelCount++;
+          }
+        }
+
+        final avgHairR = hairPixelCount > 0 ? (hairR / hairPixelCount) : 50.0;
+        final avgHairG = hairPixelCount > 0 ? (hairG / hairPixelCount) : 40.0;
+        final avgHairB = hairPixelCount > 0 ? (hairB / hairPixelCount) : 35.0;
+
+        // Luminosidade Relativa (Perceived Luminance)
+        final skinLum = 0.299 * avgR + 0.587 * avgG + 0.114 * avgB;
+        final hairLum = 0.299 * avgHairR + 0.587 * avgHairG + 0.114 * avgHairB;
+        final contrastDelta = (skinLum - hairLum).abs();
+
+        // Análise de Subtom: Razão Quente (Vermelho/Amarelo) vs Frio (Azul/Rosa)
+        final warmthRatio = (avgR - avgB) / (avgR + avgG + avgB + 1e-5);
+        final bool isWarm = warmthRatio > 0.18 || (avgR > avgB * 1.35);
+
+        String contrastLevel;
+        if (contrastDelta > 65) {
+          contrastLevel = 'Contraste Alto';
+        } else if (contrastDelta > 35) {
+          contrastLevel = 'Contraste Médio';
+        } else {
+          contrastLevel = 'Contraste Suave';
+        }
+
+        String seasonName;
+        String undertoneDesc;
+        String metalsAdvice;
+        String makeupAdvice;
+        String reason;
+
+        if (isWarm) {
+          undertoneDesc = 'Quente (Fundo Dourado / Pêssego)';
+          metalsAdvice = 'Ouro Amarelo, Ouro Rosé e Cobre';
+          if (contrastDelta > 55 || skinLum > 170) {
+            seasonName = 'Primavera Brilhante';
+            reason = 'Sua pele irradia luminosidade com tons vivos, claros e alegres.';
+            makeupAdvice = 'Batons coral, pêssego e sombras champanhe e bronze dourado.';
+          } else {
+            seasonName = 'Outono Quente';
+            reason = 'Sua pele tem excelente harmonia com tons terrosos, mostarda e oliva.';
+            makeupAdvice = 'Batons terracota, nude quente, marrom canela e sombras acobreadas.';
+          }
+        } else {
+          undertoneDesc = 'Frio (Fundo Rosado / Azulado)';
+          metalsAdvice = 'Prata 925, Ródio e Ouro Branco';
+          if (contrastDelta > 50) {
+            seasonName = 'Inverno Escuro';
+            reason = 'Seu contraste facial é marcante e se destaca com pretos puros, brancos ópticos e cores joia.';
+            makeupAdvice = 'Batons vinho, rubi intenso, cereja e delineados bem definidos.';
+          } else {
+            seasonName = 'Verão Suave';
+            reason = 'Sua beleza é valorizada por tons delicados, frios e levemente acinzentados ou pastéis.';
+            makeupAdvice = 'Batons rosa seco, malva e sombras lavanda, grafite ou cinza suave.';
+          }
+        }
+
+        final season = getSeasonByName(seasonName);
+        final sampleColor = Color.fromARGB(
+          255,
+          avgR.round().clamp(0, 255),
+          avgG.round().clamp(0, 255),
+          avgB.round().clamp(0, 255),
+        );
+
+        return ColorAnalysisResult(
+          season: season,
+          undertone: undertoneDesc,
+          contrast: contrastLevel,
+          skinSampleColor: sampleColor,
+          explanation: reason,
+          metalsRecommendation: metalsAdvice,
+          makeupAndHairAdvice: makeupAdvice,
+          isWarm: isWarm,
+        );
+      }
+    } catch (e) {
+      debugPrint('Aviso análise de imagem: $e. Utilizando diagnóstico padrão.');
+    }
+
+    final season = getSeasonByName('Outono Quente');
+    return ColorAnalysisResult(
+      season: season,
+      undertone: 'Quente (Fundo Dourado/Oliva)',
+      contrast: 'Contraste Médio',
+      skinSampleColor: const Color(0xFFD4A373),
+      explanation: 'Sua pele harmoniza naturalmente com tons terrosos, mostarda e oliva.',
+      metalsRecommendation: 'Ouro Amarelo, Ouro Rosé e Cobre',
+      makeupAndHairAdvice: 'Batons nude quente, terracota e marrom canela.',
+      isWarm: true,
+    );
+  }
+}
+
+class ColorAnalysisResult {
+  final ColorSeason season;
+  final String undertone;
+  final String contrast;
+  final Color skinSampleColor;
+  final String explanation;
+  final String metalsRecommendation;
+  final String makeupAndHairAdvice;
+  final bool isWarm;
+
+  const ColorAnalysisResult({
+    required this.season,
+    required this.undertone,
+    required this.contrast,
+    required this.skinSampleColor,
+    required this.explanation,
+    required this.metalsRecommendation,
+    required this.makeupAndHairAdvice,
+    required this.isWarm,
+  });
 }
 
 class ColorMatchEvaluation {

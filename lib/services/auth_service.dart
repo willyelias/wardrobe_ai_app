@@ -32,6 +32,7 @@ class AuthService {
     final name = prefs.getString(_kUserNameKey) ?? 'Usuário Fashion';
     final email = prefs.getString(_kUserEmailKey) ?? 'usuario@wardrobe.ai';
     final photo = prefs.getString(_kUserPhotoKey);
+    final colorPalette = prefs.getString('auth_user_color_palette');
     final methodStr = prefs.getString(_kAuthMethodKey) ?? 'google';
 
     final method = methodStr == 'google'
@@ -45,6 +46,7 @@ class AuthService {
       displayName: name,
       email: email,
       photoUrl: photo,
+      colorPalette: colorPalette,
       authMethod: method,
       isLoggedIn: true,
       lastSyncAt: DateTime.now(),
@@ -113,6 +115,16 @@ class AuthService {
     _currentUser = profile;
     await DatabaseService.instance.saveUserProfile(profile);
     return profile;
+  }
+
+  /// Atualiza a cartela de cores do usuário de forma persistente
+  Future<void> updateColorPalette(String palette) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_user_color_palette', palette);
+    if (_currentUser != null) {
+      _currentUser = _currentUser!.copyWith(colorPalette: palette);
+      await DatabaseService.instance.saveUserProfile(_currentUser!);
+    }
   }
 
   /// Logout

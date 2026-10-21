@@ -2,7 +2,7 @@ name: wardrobe_ai_app
 description: "Virtual Wardrobe & AI Stylist Mobile App (Riverpod, SQLite, AdMob, Cupertino/M3 Minimalist Design)"
 publish_to: 'none'
 
-version: 1.2.0+3
+version: 1.2.1+4
 
 environment:
   sdk: ^3.13.5
